@@ -1,0 +1,57 @@
+name: fish
+target:
+  registry: ocx.sh
+  repository: fish
+
+source:
+  type: github_release
+  owner: fish-shell
+  repo: fish-shell
+  tag_pattern: "^(?P<version>\\d+\\.\\d+\\.\\d+)$"
+
+assets:
+  linux/amd64:
+    - "^fish-.*-linux-x86_64\\.tar\\.xz$"
+  linux/arm64:
+    - "^fish-.*-linux-aarch64\\.tar\\.xz$"
+
+asset_type:
+  type: archive
+  strip_components: 0   # the linux *.tar.xz extracts a single bare `fish` binary at the root (no wrapper dir, no bin/)
+
+metadata:
+  default: metadata.json
+
+skip_prereleases: true
+cascade: true
+build_timestamp: none
+
+versions:
+  min: "4.7.0"
+  new_per_run: 5
+  poll_interval: "0 */6 * * *"
+
+verify:
+  github_asset_digest: true
+
+concurrency:
+  max_downloads: 8
+  max_bundles: 4
+  max_pushes: 2
+  rate_limit_ms: 100
+  max_retries: 3
+  compression_threads: 0
+
+tests:
+  - name: smoke
+    script: tests/smoke.star
+
+platforms:
+  linux/amd64:
+    runner: ubuntu-latest
+  linux/arm64:
+    runner: ubuntu-24.04-arm
+
+notify:
+  discord:
+    webhook_secret: OCX_MIRROR_DISCORD_HOOK
