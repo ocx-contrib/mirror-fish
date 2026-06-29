@@ -2,9 +2,22 @@
 
 OCX mirror for [fish](https://github.com/fish-shell/fish-shell). Publishes
 GitHub releases to `ocx.sh/fish` with cascade tags after a smoke test per
-`(version, platform)`. Linux only (`linux/amd64`, `linux/arm64`) — upstream
-ships prebuilt binaries for those targets; macOS releases are `.app`/`.pkg`
-installers, not OCX-bundleable tarballs.
+`(version, platform)`.
+
+Platforms: `linux/amd64`, `linux/arm64`, `darwin/amd64`, `darwin/arm64`.
+
+- **linux** — upstream's `fish-<v>-linux-{x86_64,aarch64}.tar.xz` is a single
+  self-contained `fish` binary; bundled bare at the root (`strip_components: 0`),
+  `PATH = ${installPath}`.
+- **darwin** — upstream's `fish-<v>.app.zip` carries ONE universal
+  (arm64 + x86_64) binary. The same asset serves both darwin arches;
+  `strip_components: 6` lifts the `.app`'s `…/base/usr/local/{bin,share,etc}`
+  install tree to the bundle root (dropping the GUI launcher + signature files),
+  `PATH = ${installPath}/bin` via `metadata-darwin.json`. Both darwin legs run on
+  Apple-Silicon runners (Intel runners are retired); fish is launched as bare
+  `fish` on every platform.
+
+No Windows: upstream ships no Windows binary.
 
 ## Editing
 

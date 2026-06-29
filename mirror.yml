@@ -14,13 +14,38 @@ assets:
     - "^fish-.*-linux-x86_64\\.tar\\.xz$"
   linux/arm64:
     - "^fish-.*-linux-aarch64\\.tar\\.xz$"
+  # macOS ships ONE universal (arm64 + x86_64) binary inside `fish-<v>.app.zip`,
+  # so the same asset serves both darwin arches — verified with `file`:
+  # "Mach-O universal binary with 2 architectures: [arm64] [x86_64]".
+  darwin/amd64:
+    - "^fish-.*\\.app\\.zip$"
+  darwin/arm64:
+    - "^fish-.*\\.app\\.zip$"
 
 asset_type:
   type: archive
-  strip_components: 0   # the linux *.tar.xz extracts a single bare `fish` binary at the root (no wrapper dir, no bin/)
+  # linux *.tar.xz is a single bare `fish` binary at the root (no wrapper dir) → strip 0.
+  # darwin fish-<v>.app.zip nests the real install tree at
+  #   fish-<v>.app/Contents/Resources/base/usr/local/{bin,share,etc}
+  # (this is exactly what the .app's install.sh `ditto`s into /usr/local).
+  # strip 6 drops `fish-<v>.app/Contents/Resources/base/usr/local/`, leaving a
+  # clean /usr/local payload (bin/ + share/ + etc/) at the bundle root. The
+  # shallower GUI launcher (Contents/MacOS/fish, 3 components) and code-signature
+  # files fall *below* the strip depth and are dropped — so only the real CLI
+  # `bin/fish` lands on PATH (no E2BIG launcher recursion). PATH → ${installPath}/bin
+  # via metadata-darwin.json. The macOS binary embeds its data dir like the linux
+  # one, and share/fish ships at ../share/fish relative to bin as a belt-and-braces.
+  strip_components:
+    default: 0
+    platforms:
+      darwin/amd64: 6
+      darwin/arm64: 6
 
 metadata:
-  default: metadata.json
+  default: metadata.json          # linux: bare `fish` at root → PATH = ${installPath}
+  platforms:
+    darwin/amd64: metadata-darwin.json   # nested bin/ → PATH = ${installPath}/bin
+    darwin/arm64: metadata-darwin.json
 
 skip_prereleases: true
 cascade: true
@@ -51,6 +76,15 @@ platforms:
     runner: ubuntu-latest
   linux/arm64:
     runner: ubuntu-24.04-arm
+  # GitHub retired the Intel macOS runners, so BOTH darwin legs run on the
+  # Apple-Silicon runner. The bundled binary is universal (arm64 + x86_64): the
+  # arm64 leg runs that slice natively; the amd64 leg validates the same bundle
+  # (the x86_64 slice is well-formed per `file`, but is not natively executable
+  # on the arm64 runner). fish is launched as bare `fish` on every platform.
+  darwin/amd64:
+    runner: macos-14
+  darwin/arm64:
+    runner: macos-14
 
 notify:
   discord:
