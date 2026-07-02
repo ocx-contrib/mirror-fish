@@ -17,3 +17,13 @@ fish is a smart and user-friendly command line shell for Linux, macOS, and the r
 - [fish Documentation](https://fishshell.com/docs/current/)
 - [fish website](https://fishshell.com)
 - [fish on GitHub](https://github.com/fish-shell/fish-shell)
+
+## License & source
+
+The fish binaries redistributed here are licensed **GPL-2.0** (© Axel
+Liljencrantz and the fish-shell contributors). The complete Corresponding Source
+for each mirrored version is available from the upstream tagged tree — e.g.
+version `X.Y.Z` at <https://github.com/fish-shell/fish-shell/releases/tag/X.Y.Z>,
+or `git clone https://github.com/fish-shell/fish-shell && git checkout X.Y.Z`.
+A 3-year written offer for the source is in `NOTICE.md`. The OCX mirror pipeline
+files are Apache-2.0.
